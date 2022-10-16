@@ -1,46 +1,49 @@
 CREATE EXTENSION postgis;
+--DROP TABLE points;
+--DROP TABLE buildings;
+--DROP TABLE roads;
 
 --Tworzenie tabel
 
 --Tabela budynki
 
 --Tabela drogi
-CREATE TABLE roads(id INT, name VARCHAR(40), geom GEOMETRY);
+CREATE TABLE Roads(id INT PRIMARY KEY, name VARCHAR(40), geom GEOMETRY);
 
 --wprowadzanie wartości do tabeli drogi
-INSERT INTO roads VALUES
+INSERT INTO Roads VALUES
 (0, 'RoadX', ST_GeomFromText('LINESTRING(0 4.5, 12 4.5)', 0)),
 (1, 'RoadY', ST_GeomFromText('LINESTRING(7.5 0, 7.5 10.5)', 0));
 
 --sprawdzenie
-SELECT * FROM roads;
+SELECT * FROM Roads;
 
 --Tabela punkty
-CREATE TABLE points(id INT, name char(1), geom GEOMETRY);
+CREATE TABLE Points(id INT PRIMARY KEY, name char(1), geom GEOMETRY, liczprac INT);
 
 --wprowadzanie wartości do tabeli punkty
-INSERT INTO points VALUES
-(0, 'K', ST_GeomFromText('POINT(6 9.5)', 0)),
-(1, 'J', ST_GeomFromText('POINT(6.5 6)', 0)),
-(2, 'I', ST_GeomFromText('POINT(9.5 6)', 0)),
-(3, 'G', ST_GeomFromText('POINT(1 3.5)', 0)),
-(4, 'H', ST_GeomFromText('POINT(5.5 1.5)', 0));
+INSERT INTO Points VALUES
+(0, 'K', ST_GeomFromText('POINT(6 9.5)', 0),1),
+(1, 'J', ST_GeomFromText('POINT(6.5 6)', 0),3),
+(2, 'I', ST_GeomFromText('POINT(9.5 6)', 0),5),
+(3, 'G', ST_GeomFromText('POINT(1 3.5)', 0),6),
+(4, 'H', ST_GeomFromText('POINT(5.5 1.5)', 0),7);
 
 --sprawdzenie
 SELECT * FROM points;
 
 --Tabela budynki
-CREATE TABLE buildings(id INT, name varchar(30), geom GEOMETRY);
+CREATE TABLE Buildings(id INT PRIMARY KEY, name varchar(30), geom GEOMETRY, wysokosc INT);
 
 --wprowadzenie wartości do tabeli budynki
-INSERT INTO buildings VALUES
-(0, 'BuildingA', ST_GeomFromText('POLYGON((8 4, 10.5 4, 10.5 1.5, 8 1.5, 8 4))', 0)),
-(1, 'BuildingB', ST_GeomFromText('POLYGON((4 7, 6 7, 6 5, 4 5, 4 7))', 0)),
-(2, 'BuildingC', ST_GeomFromText('POLYGON((3 8, 5 8, 5 6, 3 6, 3 8))', 0)),
-(3, 'BuildingD', ST_GeomFromText('POLYGON((9 9, 10 9, 10 8, 9 8, 9 9))', 0)),
-(4, 'BuildingF', ST_GeomFromText('POLYGON((1 2, 2 2, 2 1, 1 1, 1 2))', 0));
+INSERT INTO Buildings VALUES
+(0, 'BuildingA', ST_GeomFromText('POLYGON((8 4, 10.5 4, 10.5 1.5, 8 1.5, 8 4))', 0), 4),
+(1, 'BuildingB', ST_GeomFromText('POLYGON((4 7, 6 7, 6 5, 4 5, 4 7))', 0),6),
+(2, 'BuildingC', ST_GeomFromText('POLYGON((3 8, 5 8, 5 6, 3 6, 3 8))', 0), 8),
+(3, 'BuildingD', ST_GeomFromText('POLYGON((9 9, 10 9, 10 8, 9 8, 9 9))', 0),10),
+(4, 'BuildingF', ST_GeomFromText('POLYGON((1 2, 2 2, 2 1, 1 1, 1 2))', 0), 16);
 
-SELECT * FROM buildings;
+SELECT * FROM Buildings;
 
 --ZADANIA
 --Zad 1
@@ -49,7 +52,7 @@ SELECT sum(ST_LENGTH(geom)) FROM roads;
 
 --Zad 2
 --Wypisz geometrię (WKT), pole powierzchni oraz obwód poligonu reprezentującego BuildingA.
-SELECT geom, ST_Area(geom),  ST_Perimeter(geom) FROM buildings WHERE name = 'BuildingA'; 
+SELECT ST_AsText(geom), ST_Area(geom),  ST_Perimeter(geom) FROM buildings WHERE name = 'BuildingA'; 
 
 --Zad 3
 --Wypisz nazwy i pola powierzchni wszystkich poligonów w warstwie budynki. Wyniki posortuj 
@@ -68,7 +71,7 @@ WHERE geom_b.name = 'BuildingC' AND geom_p.name = 'G';
 
 --Zad 6
 --Wypisz pole powierzchni tej części budynku BuildingC, która znajduje się w odległości większej 
---niż 0.5 od budynku BuildingB.
+--niż 0.5 od budynku BuildingB.  
 SELECT ST_area(ST_DIFFERENCE(ST_Union(bc.geom, bb.geom),ST_Buffer(bb.geom, 0.5)))
 FROM Buildings as bc, Buildings as bb 
 WHERE
